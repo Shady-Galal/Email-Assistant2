@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+    }
+
+    .header {
+      background-color: #007bff;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .signature {
+      position: absolute;
+      top: 1px;
+      left: 20px;
+      font-family: 'cursive';
+      font-size: 18px;
+      color: #ffffff;
+    }
+
+    .content-container {
+      display: flex;
+      flex: 1;
+    }
+
+    .left-panel {
+      flex: 3;
+      background-color: rgb(187, 224, 237);
+      border-right: 1px solid rgb(81, 158, 221);
+      padding: 20px;
+    }
+
+    .right-panel {
+      flex: 1;
+      background-color: rgb(81, 158, 221);
+      padding: 20px;
+    }
+
+    .input-container {
+      margin-bottom: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 10px;
+      text-align: center;
+      background-color: #ADD8E6;
+    }
+
+    tr:nth-child(2) td {
+      background-color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .copy-button {
+      margin-top: 10px;
+    }
+
+    .dropdown-container {
+      margin-top: 20px;
+    }
+
+    .selected-email {
+      margin-top: 10px;
+      white-space: pre-line;
+    }
+
+
+  </style>
+</head>
+
+<body>
+  <!-- Signature -->
+  <div class="signature">
+    <p>Designed by</p>
+    <p>Shady Galal</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="header">
+    <h1>Email Assistant</h1>
+  </div>
+
+  <div class="content-container">
+    <div class="left-panel">
+      <div class="input-container">
+        <label for="dataType">Select Data Type:</label>
+        <select id="dataType" onchange="generateContent()">
+          <option value="">Select option</option>
+          <!-- Default options -->
+          <option value="TDRA">TDRA</option>
+          <option value="Reconnection">Reconnection</option>
+          <option value="Delivery">Delivery</option>
+          <option value="reg">Registration</option>
+          <option value="aux">Aux</option>
+          <option value="MoveBreak">Move Break</option>
+          <option value="AuxRequest">Aux Request</option>
+        </select>
+      </div>
+
+      <div id="content-container"></div>
+
+      <div id="data-input" class="hidden">
+        <button onclick="copyTable()">Copy</button>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <h2>TO</h2>
+      <p id="toEmail"></p>
+      <div>
+        <button class="copy-button" onclick="copyEmail()">Copy Email</button>
+        <!-- New Buttons on the next line -->
+        <br>
+        <button class="copy-button" onclick="copyCC()">Copy CC</button>
+        <button class="copy-button" onclick="copySubject()">Copy Subject</button>
+      </div>
+
+      <!-- Recipient dropdown container -->
+      <div class="dropdown-container">
+        <label for="emailDropdown">Choose Recipient:</label>
+        <select id="emailDropdown" onchange="updateEmail()">
+          <option value="Select">Select</option>
+          <option value="Shady Galal">Shady Galal</option>
+          <option value="Youstina Nabil">Youstina Nabil</option>
+          <option value="Nader Wagdy">Nader Wagdy</option>
+          <option value="Mohamed Saleh">Mohamed Saleh</option>
+        </select>
+
+        <div id="selectedEmail" class="selected-email"></div>
+        <div id="loginText" class="selected-email"></div>
+        <button id="copyEmailButton" class="copy-button" onclick="copySelectedEmail()">Copy Email</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function generateContent() {
+      const dataType = document.getElementById('dataType').value;
+      const contentContainer = document.getElementById('content-container');
+      const toEmail = document.getElementById('toEmail');
+
+      if (dataType) {
+        let paragraph1, paragraph2, loginText;
+        let headerLabels = ['Account Number', 'Contact Number'];
+
+        if (dataType === 'TDRA') {
+          paragraph1 = 'Greetings';
+          paragraph2 = 'Your support is highly appreciated, Customer mentioned that he will complain Etisalat in TDRA.';
+          headerLabels = ['Account Number', 'Contact Number', 'Verification', 'Language'];
+          toEmail.textContent = 'Select Recipient ⬇️'; // Update the selection in the right panel
+        } else if (dataType === 'Reconnection') {
+          paragraph1 = 'Greetings';
+          paragraph2 = 'Your support is highly appreciated, Customer want to reconnect this account so kindly support.';
+          headerLabels = ['Account Number', 'Status'];
+          toEmail.textContent = 'highusage@etisalate.ae'; // Update the selection in the right panel
+        } else if (dataType === 'Delivery') {
+          paragraph1 = 'Greetings';
+          paragraph2 = 'Customer has a pending device delivery request, Customer wants the device as soon as possible so kindly support.';
+          headerLabels = ['Account Number', 'Contact Number', 'Request ID', 'Shipment ID', 'Status'];
+          toEmail.textContent = 'fleet@etisalate.ae'; // Update the selection in the right panel
+        } else if (dataType === 'reg') {
+          paragraph1 = 'Greetings';
+          paragraph2 = 'Your support is highly appreciated, Customer want to reconnect this account for one month so kindly support.';
+          headerLabels = ['Registration ID', 'Name'];
+          toEmail.textContent = 'registration@etisalate.ae'; // Update the selection in the right panel
+
+          const dataTable = document.createElement('table');
+
+          for (let i = 0; i < 4; i++) {
+            const row = document.createElement('tr');
+            for (let j = 0; j < headerLabels.length; j++) {
+              const cell = (i === 0) ? document.createElement('th') : document.createElement('td');
+
+              // Styling for the "reg" table
+              if (dataType === 'reg') {
+                if (j === 0) {
+                  cell.style.backgroundColor = '#ADD8E6'; // Light blue for the first column
+                  cell.style.fontWeight = 'bold'; // Bold text for the first column
+                } else {
+                  cell.style.backgroundColor = 'white'; // White for the second column
+                }
+              }
+
+              cell.setAttribute('contenteditable', 'true');
+
+              // Set text content based on the position of the cell
+              if (i === 0) {
+                // Fill the first row of the "reg" table
+                cell.innerText = (j === 0) ? 'Account Number' : ' ';
+              } else {
+                // Fill the subsequent rows of the "reg" table
+                switch (i) {
+                  case 1:
+                    cell.innerText = (j === 0) ? 'Name' : ' ';
+                    break;
+                  case 2:
+                    cell.innerText = (j === 0) ? 'ID Expiration Date' : ' ';
+                    break;
+                  case 3:
+                    cell.innerText = (j === 0) ? 'Justification' : ' ';
+                    break;
+                }
+              }
+
+              row.appendChild(cell);
+            }
+            dataTable.appendChild(row);
+          }
+
+          contentContainer.innerHTML = '';
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph1));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph2));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(dataTable);
+          contentContainer.appendChild(document.createElement('br'));
+
+          document.getElementById('data-input').classList.remove('hidden');
+          return;
+//----------
+} else if (dataType === 'aux') {
+          paragraph1 = 'Greetings,';
+          paragraph2 = 'Please find the aux request below.';
+          headerLabels = ['Registration ID', 'Name'];
+          loginText = 'Login  :  "12345"';
+          toEmail.textContent = 'Select Duty ⬇️'; // Update the selection in the right panel
+
+          const dataTable = document.createElement('table');
+
+          for (let i = 0; i < 4; i++) {
+            const row = document.createElement('tr');
+            for (let j = 0; j < headerLabels.length; j++) {
+              const cell = (i === 0) ? document.createElement('th') : document.createElement('td');
+
+              // Styling for the "reg" table
+              if (dataType === 'aux') {
+                if (j === 0) {
+                  cell.style.backgroundColor = '#ADD8E6'; // Light blue for the first column
+                  cell.style.fontWeight = 'bold'; // Bold text for the first column
+                } else {
+                  cell.style.backgroundColor = 'white'; // White for the second column
+                }
+              }
+
+              cell.setAttribute('contenteditable', 'true');
+
+              // Set text content based on the position of the cell
+              if (i === 0) {
+                // Fill the first row of the "reg" table
+                cell.innerText = (j === 0) ? 'Login' : ' ';
+              } else {
+                // Fill the subsequent rows of the "reg" table
+                switch (i) {
+                  case 1:
+                    cell.innerText = (j === 0) ? 'Aux' : ' ';
+                    break;
+                  case 2:
+                    cell.innerText = (j === 0) ? 'Time' : ' ';
+                    break;
+                  case 3:
+                    cell.innerText = (j === 0) ? 'Reason' : ' ';
+                    break;
+                }
+              }
+
+              row.appendChild(cell);
+            }
+            dataTable.appendChild(row);
+          }
+
+          contentContainer.innerHTML = '';
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph1));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph2));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(dataTable);
+          contentContainer.appendChild(document.createElement('br'));
+
+          document.getElementById('data-input').classList.remove('hidden');
+          return;
+//----------
+} else if (dataType === 'AuxRequest') {
+          paragraph1 = 'Greetings,';
+          paragraph2 = 'Please find the aux request below:';
+          headerLabels = ['Name', 'Login', 'Aux', 'Deuration', 'Reason'];
+          toEmail.textContent = 'Select Duty ⬇️'; // Update the selection in the right panel
+
+          const dataTable = document.createElement('table');
+
+          for (let i = 0; i < 5; i++) {
+            const row = document.createElement('tr');
+            for (let j = 0; j < 2; j++) {
+              const cell = (i === 0) ? document.createElement('th') : document.createElement('td');
+
+              // Styling for the "MoveBreak" table
+              if (j === 0) {
+                cell.style.backgroundColor = '#ADD8E6'; // Light blue for the first column
+                cell.style.fontWeight = 'bold'; // Bold text for the first column
+                cell.innerText = headerLabels[i]; // Set initial values for the first column
+              } else {
+                cell.style.backgroundColor = 'white'; // White for the second column
+                cell.setAttribute('contenteditable', 'true');
+                cell.innerText = ''; // Leave the second column empty
+              }
+
+              row.appendChild(cell);
+            }
+            dataTable.appendChild(row);
+          }
+
+          contentContainer.innerHTML = '';
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph1));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph2));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(dataTable);
+          contentContainer.appendChild(document.createElement('br'));
+
+          document.getElementById('data-input').classList.remove('hidden');
+          return;
+//----------
+        } else if (dataType === 'MoveBreak') {
+          paragraph1 = 'Greetins,';
+          paragraph2 = 'Please find the move break request below:';
+          headerLabels = ['Name', 'Login', 'Break', 'Move to', 'Reason'];
+          loginText = ''; // No login text for this option
+          toEmail.textContent = 'Select Duty ⬇️'; // Update the selection in the right panel
+
+          const dataTable = document.createElement('table');
+
+          for (let i = 0; i < 5; i++) {
+            const row = document.createElement('tr');
+            for (let j = 0; j < 2; j++) {
+              const cell = (i === 0) ? document.createElement('th') : document.createElement('td');
+
+              // Styling for the "MoveBreak" table
+              if (j === 0) {
+                cell.style.backgroundColor = '#ADD8E6'; // Light blue for the first column
+                cell.style.fontWeight = 'bold'; // Bold text for the first column
+                cell.innerText = headerLabels[i]; // Set initial values for the first column
+              } else {
+                cell.style.backgroundColor = 'white'; // White for the second column
+                cell.setAttribute('contenteditable', 'true');
+                cell.innerText = ''; // Leave the second column empty
+              }
+
+              row.appendChild(cell);
+            }
+            dataTable.appendChild(row);
+          }
+
+          contentContainer.innerHTML = '';
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph1));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(document.createTextNode(paragraph2));
+          contentContainer.appendChild(document.createElement('br'));
+          contentContainer.appendChild(dataTable);
+          contentContainer.appendChild(document.createElement('br'));
+
+          document.getElementById('data-input').classList.remove('hidden');
+          return;
+        }
+
+        const dataTable = document.createElement('table');
+
+        for (let i = 0; i < 2; i++) {
+          const row = document.createElement('tr');
+          for (let j = 0; j < headerLabels.length; j++) {
+            const cell = (i === 0) ? document.createElement('th') : document.createElement('td');
+
+            // Styling for the "reg" table
+            if (dataType === 'reg') {
+              if (j === 0) {
+                cell.style.backgroundColor = '#ADD8E6'; // Light blue for the first column
+              } else {
+                cell.style.backgroundColor = 'white'; // White for the second column
+              }
+            }
+
+            cell.setAttribute('contenteditable', 'true');
+            if (i === 0) {
+              // Fill the first row of the "reg" table
+              cell.innerText = (dataType === 'reg') ? ['Num', 'Name', 'Date', 'Reason'][j] : headerLabels[j];
+            } else {
+              cell.innerText = '';
+            }
+            row.appendChild(cell);
+          }
+          dataTable.appendChild(row);
+        }
+
+        contentContainer.innerHTML = '';
+        contentContainer.appendChild(document.createElement('br'));
+        contentContainer.appendChild(document.createTextNode(paragraph1));
+        contentContainer.appendChild(document.createElement('br'));
+        contentContainer.appendChild(document.createTextNode(paragraph2));
+        contentContainer.appendChild(document.createElement('br'));
+        contentContainer.appendChild(dataTable);
+        contentContainer.appendChild(document.createElement('br'));
+
+        document.getElementById('data-input').classList.remove('hidden');
+      } else {
+        contentContainer.innerHTML = '';
+        contentContainer.textContent = 'Please select an option.';
+        document.getElementById('data-input').classList.add('hidden');
+        toEmail.textContent = ' ';
+      }
+    }
+
+    function copyTable() {
+  const contentContainer = document.getElementById('content-container');
+  const range = document.createRange();
+  range.selectNode(contentContainer);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  document.execCommand('copy');
+  window.getSelection().removeAllRanges();
+}
+
+function copyEmail() {
+  const toEmailParagraph = document.getElementById('toEmail');
+  const tempInput = document.createElement('input');
+  tempInput.value = toEmailParagraph.textContent;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempInput);
+}
+
+
+    function updateEmail() {
+      const dropdown = document.getElementById('emailDropdown');
+      const selectedEmailContainer = document.getElementById('selectedEmail');
+      const loginTextContainer = document.getElementById('loginText');
+      const copyEmailButton = document.getElementById('copyEmailButton');
+
+      const selectedValue = dropdown.value;
+
+      let emailText, loginText;
+      switch (selectedValue) {
+        case "Select":
+          emailText = " ";
+          loginText = ' ';
+          break;
+        case "Shady Galal":
+          emailText = "ghanafy@etisalat.ae";
+          loginText = 'Login  :  "52968"';
+          break;
+        case "Youstina Nabil":
+          emailText = "youstina@etisalat.ae";
+          loginText = 'Login  :  "21438"';
+          break;
+        case "Nader Wagdy":
+          emailText = "Nader@etisalat.ae";
+          loginText = 'Login  :  "98745"';
+          break;
+          case "Mohamed Saleh":
+          emailText = "Mohamed@etisalat.ae";
+          loginText = 'Login  :  "21438"';
+          break;
+        default:
+          emailText = "";
+          loginText = "";
+      }
+
+      selectedEmailContainer.textContent = emailText;
+      loginTextContainer.textContent = loginText;
+      copyEmailButton.style.display = emailText ? 'block' : 'none';
+    }
+
+    function copySelectedEmail() {
+  const selectedEmailContainer = document.getElementById('selectedEmail');
+  const tempInput = document.createElement('textarea');
+  tempInput.value = selectedEmailContainer.textContent;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempInput);
+}
+
+function copyCC() {
+      const ccEmails = 'UniversalEgsTL@etisalat.ae UniversalEgsagent@etisalat.ae';
+      const tempInput = document.createElement('textarea');
+      tempInput.value = ccEmails;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+    }
+
+    function copySubject() {
+      const dataTypeDropdown = document.getElementById('dataType');
+      const selectedOption = dataTypeDropdown.value;
+      const tempInput = document.createElement('input');
+      tempInput.value = selectedOption;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+    }
+
+  </script>
+</body>
+
+</html>
